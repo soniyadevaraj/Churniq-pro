@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChurnIQ Pro — Telecom Intelligence Platform</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div class="shell">
+
+  <!-- ─── TOPBAR ─── -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-icon">⚡</div>
+      <div>
+        <div class="brand-text">Churn<span>IQ</span> Pro</div>
+      </div>
+      <div class="brand-tag">TELECOM INTELLIGENCE v2.0</div>
+    </div>
+    <div class="topbar-right">
+      <div class="live-badge"><div class="dot-pulse"></div>Live data</div>
+      <select class="filter-sel" id="segFilter" onchange="applyFilter()">
+        <option value="all">All segments</option>
+        <option value="senior">Senior citizens</option>
+        <option value="fiber">Fiber optic</option>
+        <option value="monthly">Month-to-month</option>
+        <option value="nointernet">No internet</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- ─── KPI ROW ─── -->
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-icon">👥</div>
+      <div class="kpi-label">Total customers</div>
+      <div class="kpi-val" id="k-total">500</div>
+      <div class="kpi-sub neutral">Active base</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-icon">📉</div>
+      <div class="kpi-label">Churn rate</div>
+      <div class="kpi-val" id="k-churn">--</div>
+      <div class="kpi-sub" id="k-churn-sub"></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-icon">⚠️</div>
+      <div class="kpi-label">High-risk customers</div>
+      <div class="kpi-val" id="k-risk">--</div>
+      <div class="kpi-sub" id="k-risk-sub"></div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-icon">💸</div>
+      <div class="kpi-label">Revenue at risk</div>
+      <div class="kpi-val" id="k-rev">--</div>
+      <div class="kpi-sub" id="k-rev-sub"></div>
+    </div>
+  </div>
+
+  <!-- ─── AI TICKER ─── -->
+  <div class="ticker-bar">
+    <div class="ticker-label">🤖 AI PULSE</div>
+    <div class="ticker-text" id="ticker-text">Loading AI insights from live data...</div>
+  </div>
+
+  <!-- ─── AI SEARCH BOT ─── -->
+  <div class="search-bot-card">
+    <div class="card-title"><span class="dot" style="background:#a78bfa"></span>🔍 AI INTELLIGENCE SEARCH</div>
+    <div class="search-tags" id="search-tags">
+      <div class="stag" onclick="runSearch('Why are fiber optic customers churning more?')">Fiber churn causes</div>
+      <div class="stag" onclick="runSearch('Which customer segment is most profitable?')">Best segment ROI</div>
+      <div class="stag" onclick="runSearch('How much revenue will we lose next quarter?')">Revenue forecast</div>
+      <div class="stag" onclick="runSearch('What retention offers should I make to month-to-month customers?')">Retention offers</div>
+      <div class="stag" onclick="runSearch('Explain churn prediction model accuracy')">Model accuracy</div>
+      <div class="stag" onclick="runSearch('Top 3 actions to prevent churn this month')">Urgent actions</div>
+    </div>
+    <div class="search-input-row">
+      <input class="search-input" id="search-input"
+             placeholder="Ask anything about your churn data, segments, revenue..."
+             onkeydown="if(event.key==='Enter') runSearch()">
+      <button class="search-btn" onclick="runSearch()">🔍 Search</button>
+    </div>
+    <div class="search-results" id="search-results">
+      <span style="color:var(--text3)">Enter a query above or click a quick tag to get instant AI-powered analytics insights...</span>
+    </div>
+  </div>
+
+  <!-- ─── API KEY SETUP ─── -->
+  <div class="setup-box" id="global-setup-box"
+       style="background:var(--surface);border:1px solid rgba(245,166,35,0.25);border-radius:12px;padding:14px 18px;margin-bottom:18px">
+    <strong>🔑 One-time setup:</strong> Paste your Anthropic API key to activate all 4 AI bots below.<br>
+    Get a free key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> → API Keys.
+    <div class="key-row">
+      <input class="key-input" id="keyInput" type="password" placeholder="sk-ant-api03-...">
+      <button class="key-btn" onclick="activateKey()">✓ Activate all AI bots</button>
+    </div>
+  </div>
+
+  <!-- ─── AI BOTS SECTION ─── -->
+  <div class="ai-section">
+    <div class="ai-section-title">⚡ AI AGENT SUITE</div>
+
+    <div class="bot-tabs">
+      <div class="bot-tab active" onclick="switchBot('analyst')">
+        <span class="tab-dot"></span> 🧠 Analyst Agent
+      </div>
+      <div class="bot-tab" onclick="switchBot('retention')">
+        <span class="tab-dot green"></span> 🎯 Retention Bot
+      </div>
+      <div class="bot-tab" onclick="switchBot('forecast')">
+        <span class="tab-dot purple"></span> 📈 Forecast Bot
+      </div>
+      <div class="bot-tab" onclick="switchBot('segment')">
+        <span class="tab-dot orange"></span> 🔬 Segment Intel Bot
+      </div>
+    </div>
+
+    <!-- BOT 1: Analyst Agent -->
+    <div class="ai-panel visible" id="bot-analyst">
+      <div class="ai-top">
+        <div class="ai-avatar blue">🧠</div>
+        <div class="ai-info">
+          <div class="ai-name">Analyst Agent</div>
+          <div class="ai-desc">Senior data analyst · Deep churn diagnostics · SHAP explainability</div>
+        </div>
+        <div class="ai-status-pill" id="badge-analyst">Setup required</div>
+      </div>
+      <div class="quick-btns">
+        <div class="qbtn" onclick="askBot('analyst','What are the top reasons customers are churning?')">Top churn reasons</div>
+        <div class="qbtn" onclick="askBot('analyst','Which segment should I prioritize for retention?')">Best segment</div>
+        <div class="qbtn" onclick="askBot('analyst','Give me 3 actionable recommendations to reduce churn')">Action plan</div>
+        <div class="qbtn" onclick="askBot('analyst','Explain the SHAP feature importance results')">Explain SHAP</div>
+        <div class="qbtn" onclick="askBot('analyst','What is the predicted revenue loss if we do nothing?')">Revenue loss</div>
+      </div>
+      <div class="ai-messages" id="msgs-analyst">
+        <div class="msg msg-ai">
+          <strong style="color:var(--accent)">ANALYST AGENT</strong><br>
+          Hello! Add your API key above to activate me. I specialise in deep churn diagnostics and data-driven recommendations from your live telecom data.
+        </div>
+      </div>
+      <div class="input-row">
+        <input class="ai-input" id="input-analyst" placeholder="Ask about churn causes, segments, revenue..."
+               onkeydown="if(event.key==='Enter') askBot('analyst',this.value)">
+        <button class="send-btn blue" onclick="askBot('analyst',document.getElementById('input-analyst').value)">Send</button>
+      </div>
+    </div>
+
+    <!-- BOT 2: Retention Bot -->
+    <div class="ai-panel" id="bot-retention">
+      <div class="ai-top">
+        <div class="ai-avatar green">🎯</div>
+        <div class="ai-info">
+          <div class="ai-name">Retention Bot</div>
+          <div class="ai-desc">Customer success specialist · Personalised retention plays · Offer strategy</div>
+        </div>
+        <div class="ai-status-pill" id="badge-retention">Setup required</div>
+      </div>
+      <div class="quick-btns">
+        <div class="qbtn" onclick="askBot('retention','What retention offers should we run this week?')">Weekly offers</div>
+        <div class="qbtn" onclick="askBot('retention','Draft a win-back email for high-risk customers')">Win-back email</div>
+        <div class="qbtn" onclick="askBot('retention','What discount strategy reduces churn fastest?')">Discount strategy</div>
+        <div class="qbtn" onclick="askBot('retention','How should we handle month-to-month customers calling to cancel?')">Cancellation script</div>
+        <div class="qbtn" onclick="askBot('retention','Prioritize the top 5 customers to call today')">Call priority list</div>
+      </div>
+      <div class="ai-messages" id="msgs-retention">
+        <div class="msg msg-ai">
+          <strong style="color:var(--accent3)">RETENTION BOT</strong><br>
+          Hello! I specialise in building retention playbooks and personalised offers. Activate with your API key to start reducing churn through targeted customer success strategies.
+        </div>
+      </div>
+      <div class="input-row">
+        <input class="ai-input" id="input-retention" placeholder="Ask about retention offers, playbooks, outreach..."
+               onkeydown="if(event.key==='Enter') askBot('retention',this.value)">
+        <button class="send-btn green" onclick="askBot('retention',document.getElementById('input-retention').value)">Send</button>
+      </div>
+    </div>
+
+    <!-- BOT 3: Forecast Bot -->
+    <div class="ai-panel" id="bot-forecast">
+      <div class="ai-top">
+        <div class="ai-avatar purple">📈</div>
+        <div class="ai-info">
+          <div class="ai-name">Forecast Bot</div>
+          <div class="ai-desc">Revenue intelligence · Trend prediction · Scenario modelling</div>
+        </div>
+        <div class="ai-status-pill" id="badge-forecast">Setup required</div>
+      </div>
+      <div class="quick-btns">
+        <div class="qbtn" onclick="askBot('forecast','What is the 90-day churn forecast?')">90-day forecast</div>
+        <div class="qbtn" onclick="askBot('forecast','How much revenue will we recover if we reduce churn by 5%?')">5% reduction impact</div>
+        <div class="qbtn" onclick="askBot('forecast','What is the worst-case revenue scenario for Q3?')">Worst case Q3</div>
+        <div class="qbtn" onclick="askBot('forecast','Model a scenario where we upgrade all DSL customers')">DSL upgrade scenario</div>
+        <div class="qbtn" onclick="askBot('forecast','What KPI targets should we set for next quarter?')">Set KPI targets</div>
+      </div>
+      <div class="ai-messages" id="msgs-forecast">
+        <div class="msg msg-ai">
+          <strong style="color:#a78bfa">FORECAST BOT</strong><br>
+          Hello! I build revenue forecasts and run scenario models. Activate with your API key to explore what-if analyses and projected churn trajectories based on your current data.
+        </div>
+      </div>
+      <div class="input-row">
+        <input class="ai-input" id="input-forecast" placeholder="Ask about revenue projections, scenarios, trends..."
+               onkeydown="if(event.key==='Enter') askBot('forecast',this.value)">
+        <button class="send-btn purple" onclick="askBot('forecast',document.getElementById('input-forecast').value)">Send</button>
+      </div>
+    </div>
+
+    <!-- BOT 4: Segment Intel Bot -->
+    <div class="ai-panel" id="bot-segment">
+      <div class="ai-top">
+        <div class="ai-avatar orange">🔬</div>
+        <div class="ai-info">
+          <div class="ai-name">Segment Intel Bot</div>
+          <div class="ai-desc">Customer segmentation · Cohort analysis · Micro-targeting intelligence</div>
+        </div>
+        <div class="ai-status-pill" id="badge-segment">Setup required</div>
+      </div>
+      <div class="quick-btns">
+        <div class="qbtn" onclick="askBot('segment','Which customer cohort has the highest lifetime value?')">Highest LTV cohort</div>
+        <div class="qbtn" onclick="askBot('segment','Compare fiber vs DSL segment behaviours')">Fiber vs DSL</div>
+        <div class="qbtn" onclick="askBot('segment','Which tenure group churns earliest?')">Tenure churn timing</div>
+        <div class="qbtn" onclick="askBot('segment','Are senior citizens more or less loyal than average?')">Senior loyalty</div>
+        <div class="qbtn" onclick="askBot('segment','Build a micro-segment profile for the highest risk group')">Risk micro-profile</div>
+      </div>
+      <div class="ai-messages" id="msgs-segment">
+        <div class="msg msg-ai">
+          <strong style="color:var(--warn)">SEGMENT INTEL BOT</strong><br>
+          Hello! I specialise in deep customer segmentation and cohort analytics. Activate with your API key to get granular intelligence on each customer group and their churn behaviours.
+        </div>
+      </div>
+      <div class="input-row">
+        <input class="ai-input" id="input-segment" placeholder="Ask about segments, cohorts, customer profiles..."
+               onkeydown="if(event.key==='Enter') askBot('segment',this.value)">
+        <button class="send-btn orange" onclick="askBot('segment',document.getElementById('input-segment').value)">Send</button>
+      </div>
+    </div>
+
+  </div><!-- /ai-section -->
+
+  <div class="glow-line"></div>
+
+  <!-- ─── AI INSIGHTS CHIPS ─── -->
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title"><span class="dot"></span>AI-generated insights</div>
+    <div class="chips" id="insight-chips"></div>
+  </div>
+
+  <!-- ─── CHARTS GRID ─── -->
+  <div class="main-grid">
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Churn distribution</div>
+      <div class="chart-box" style="height:200px"><canvas id="c-donut"></canvas></div>
+      <div id="donut-legend" style="display:flex;gap:18px;margin-top:12px;font-size:12px"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--warn)"></span>Churn by contract type</div>
+      <div class="chart-box" style="height:200px"><canvas id="c-bar"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--danger)"></span>Monthly churn trend + forecast</div>
+      <div class="chart-box" style="height:190px"><canvas id="c-trend"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:#a78bfa"></span>SHAP feature importance</div>
+      <div class="shap-list" id="shap-list"></div>
+    </div>
+    <div class="card full">
+      <div class="card-title"><span class="dot" style="background:var(--danger)"></span>High-risk customer roster (score ≥ 65%)</div>
+      <div style="overflow-x:auto">
+        <table class="risk-table">
+          <thead><tr>
+            <th>Customer ID</th>
+            <th>Contract</th>
+            <th>Tenure (mo)</th>
+            <th>Monthly ($)</th>
+            <th>Internet</th>
+            <th>Churn score</th>
+            <th>Risk</th>
+          </tr></thead>
+          <tbody id="risk-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--accent3)"></span>Churn by internet service</div>
+      <div class="seg-list" id="seg-list"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--warn)"></span>Tenure vs monthly charge (risk coloured)</div>
+      <div class="chart-box" style="height:190px"><canvas id="c-scatter"></canvas></div>
+    </div>
+  </div>
+
+  <div class="footer">CHURNIQ PRO v2.0 &nbsp;·&nbsp; PYTHON &nbsp;·&nbsp; SQL &nbsp;·&nbsp; SCIKIT-LEARN &nbsp;·&nbsp; CLAUDE AI</div>
+
+</div><!-- /shell -->
+
+<!-- Scripts — order matters: data → charts → ui → ai → init -->
+<script src="js/data.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/ai.js"></script>
+<script>
+  // ─── Bootstrap ───
+  renderAll();
+  buildTrend();
+  buildScatter();
+  renderSHAP();
+
+  // ─── Live update loop (every 5s) ───
+  setInterval(function() {
+    allC = allC.map(function(c) {
+      var d = Math.random() > 0.5 ? 1 : -1;
+      return Object.assign({}, c, { score: Math.min(99, Math.max(1, c.score + d * Math.floor(Math.random() * 2))) });
+    });
+    if (document.getElementById('segFilter').value === 'all') filtered = allC.slice();
+    renderKPIs(); renderInsights(); renderDonut(); renderBar(); renderTable(); updateTicker();
+  }, 5000);
+
+  // ─── Ticker rotation (every 8s) ───
+  setInterval(updateTicker, 8000);
+</script>
+</body>
+</html>
